@@ -1,0 +1,18 @@
+name: chameleon_shared
+description: Chameleon shared resources
+# version: 1.0.0
+# homepage: https://www.example.com
+# author: Frank <frank@igindo.com>
+
+environment:
+  sdk: '>=2.2.0 <3.0.0'
+
+dependencies:
+  bloc: ^0.15.0
+  rxdart: ^0.22.2
+  tuple: ^1.0.2
+  xml: 3.4.1
+
+dev_dependencies:
+  pedantic: ^1.0.0
+  test: ^1.5.1
