@@ -86,10 +86,10 @@ dynamic getCombinedIndex(xml.XmlElement element, {bool asJsObject = true}) {
     current = current.parent;
   }
 
-  return asJsObject ? _toJsObject(indices) : indices;
+  return asJsObject ? toJsObject(indices) : indices;
 }
 
-dynamic _toJsObject(Map<String, int> indices) {
+dynamic toJsObject(Map<String, int> indices) {
   final obj = newObject();
 
   indices.forEach((k, v) => setProperty(obj, k, v));
