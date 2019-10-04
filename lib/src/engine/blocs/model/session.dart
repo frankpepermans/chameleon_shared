@@ -9,8 +9,7 @@ import 'package:chameleon_shared/src/engine/blocs/model/model_state.dart';
 import 'package:chameleon_shared/src/engine/utils/utils.dart';
 
 class ParserSession {
-  final Future<Element> Function(xml.XmlElement element,
-      {Element parent, OpenCloseNodes openCloseNodes}) next;
+  final Future<Element> Function(xml.XmlElement element, {Element parent}) next;
 
   int _nextId = 0;
 
@@ -28,8 +27,7 @@ class ParserSession {
 
   ParserSession(this.next);
 
-  Future<Element> findMatch(
-      String id, xml.XmlElement origin, Completer<bool> resolved) {
+  Future<Element> findMatch(String id, xml.XmlElement origin) {
     final completer = _ElementCompleter(id, origin);
 
     _onParsed.value.firstWhere(completer.test, orElse: () {
@@ -37,8 +35,6 @@ class ParserSession {
 
       return null;
     });
-
-    resolved.future.whenComplete(completer.completeWithoutMatch);
 
     return completer.completer.future;
   }
