@@ -38,15 +38,26 @@ class ModelBloc extends Bloc<XmlState, ModelState> {
   Stream<ModelState> transformEvents(events, next) =>
       Observable(events).whereType<DocumentState>().switchMap(next);
 
-  Future<Element> _toModel(DocumentState state) => _parse(
-      state.document.rootElement,
-      parent:
-          Element('root', 'root', null, <Element>[], <Binding>[], false, -1));
+  Future<Element> _toModel(DocumentState state) {
+    final openCloseNodes = OpenCloseNodes();
 
-  Future<Element> _parse(xml.XmlElement element, {Element parent}) =>
-      _resolveStrategy(element.name.prefix).apply(element, parent, _session);
+    openCloseNodes.completer.future.whenComplete(_session.clear);
 
-  ParserStrategy _resolveStrategy(String fromPrefix) {
+    return _parse(state.document.rootElement,
+        parent:
+            Element('root', 'root', null, <Element>[], <Binding>[], false, -1),
+        openCloseNodes: openCloseNodes);
+  }
+
+  Future<Element> _parse(xml.XmlElement element,
+          {Element parent, OpenCloseNodes openCloseNodes}) =>
+      _resolveStrategy(element.name.prefix, openCloseNodes)
+          .apply(element, parent, _session, openCloseNodes)
+          .whenComplete(openCloseNodes.incrementClosed)
+          .whenComplete(openCloseNodes.tryResolve);
+
+  ParserStrategy _resolveStrategy(
+      String fromPrefix, OpenCloseNodes openCloseNodes) {
     switch (_resolveElementType(fromPrefix)) {
       case _ElementType.core:
         return const CoreParserStrategy();

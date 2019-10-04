@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:chameleon_shared/src/engine/blocs/model/strategy.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:xml/xml.dart' as xml;
 
@@ -7,7 +9,8 @@ import 'package:chameleon_shared/src/engine/blocs/model/model_state.dart';
 import 'package:chameleon_shared/src/engine/utils/utils.dart';
 
 class ParserSession {
-  final Future<Element> Function(xml.XmlElement element, {Element parent}) next;
+  final Future<Element> Function(xml.XmlElement element,
+      {Element parent, OpenCloseNodes openCloseNodes}) next;
 
   int _nextId = 0;
 
@@ -25,7 +28,8 @@ class ParserSession {
 
   ParserSession(this.next);
 
-  Future<Element> findMatch(String id, xml.XmlElement origin) {
+  Future<Element> findMatch(
+      String id, xml.XmlElement origin, Completer<bool> resolved) {
     final completer = _ElementCompleter(id, origin);
 
     _onParsed.value.firstWhere(completer.test, orElse: () {
@@ -33,6 +37,8 @@ class ParserSession {
 
       return null;
     });
+
+    resolved.future.whenComplete(completer.completeWithoutMatch);
 
     return completer.completer.future;
   }
@@ -43,22 +49,36 @@ class ParserSession {
     _onParsed.add(List<Element>.unmodifiable(
         List<Element>.from(_onParsed.value)..add(element)));
   }
+
+  void clear() {
+    _completers.clear();
+    _onParsed.add(const <Element>[]);
+  }
 }
 
 class _ElementCompleter {
-  final String id;
+  final String id, index;
+  Map _indexMap;
   final xml.XmlElement origin;
   final Completer<Element> completer;
 
-  _ElementCompleter(this.id, this.origin) : completer = Completer<Element>();
+  _ElementCompleter(this.id, this.origin)
+      : completer = Completer<Element>(),
+        index = attributeValue(origin, 'data-index') {
+    if (index != null) _indexMap = const JsonDecoder().convert(index) as Map;
+  }
 
   bool test(Element other) {
-    if (other.id == id && samePath(other.element, origin)) {
+    if (other.id == id && samePath(other.element, index, _indexMap)) {
       completer.complete(other);
 
       return true;
     }
 
     return false;
+  }
+
+  void completeWithoutMatch() {
+    if (!completer.isCompleted) completer.complete(null);
   }
 }

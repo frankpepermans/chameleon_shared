@@ -33,17 +33,15 @@ Map<String, int> indexMap({Element htmlElement, xml.XmlElement xmlElement}) {
   return const <String, int>{};
 }
 
-bool samePath(xml.XmlElement origin, xml.XmlElement local) {
-  final left = attributeValue(origin, 'data-index'),
-      right = attributeValue(local, 'data-index');
+bool samePath(xml.XmlElement origin, String right, Map rMap) {
+  final left = attributeValue(origin, 'data-index');
   final hash = '${left.hashCode}_${right.hashCode}';
 
   return _matchingIndexCache.putIfAbsent(hash, () {
     if (left == right) return true;
     if (left == null || right == null) return false;
 
-    final lMap = const JsonDecoder().convert(left) as Map,
-        rMap = const JsonDecoder().convert(right) as Map;
+    final lMap = const JsonDecoder().convert(left) as Map;
 
     final unionKeys =
         lMap.keys.where((key) => rMap.containsKey(key)).toList(growable: false);

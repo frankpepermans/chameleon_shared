@@ -7,33 +7,32 @@ import 'package:chameleon_shared/src/engine/blocs/model/session.dart';
 import 'package:chameleon_shared/src/engine/utils/utils.dart';
 
 abstract class ParserStrategy {
-  Future<Element> apply(
-      xml.XmlElement element, Element parent, ParserSession session);
+  Future<Element> apply(xml.XmlElement element, Element parent,
+      ParserSession session, OpenCloseNodes openCloseNodes);
 }
 
 class BindingParserStrategy implements ParserStrategy {
   const BindingParserStrategy();
 
-  Future<Element> apply(
-      xml.XmlElement element, Element parent, ParserSession session) {
+  Future<Element> apply(xml.XmlElement element, Element parent,
+      ParserSession session, OpenCloseNodes openCloseNodes) {
     final id = attributeValue(element, 'id');
 
+    openCloseNodes.incrementOpen();
+
     return session
-        .findMatch(id, element)
-        .timeout(const Duration(milliseconds: 100))
+        .findMatch(id, element, openCloseNodes.completer)
         .then((parent) {
       if (parent == null) return null;
 
       parent.bindings.add(Binding(element.name.local, id, element,
           element.name.prefix == 'bound', session.getNextId()));
 
-      return asyncEvery(notOmitted(element.children),
-              (xml.XmlElement element) => session.next(element, parent: parent))
-          .then((_) => parent);
-    }, onError: (e, s) {
-      print(e);
-
-      return parent;
+      return asyncEvery(
+          notOmitted(element.children),
+          (xml.XmlElement element) => session.next(element,
+              parent: parent,
+              openCloseNodes: openCloseNodes)).then((_) => parent);
     });
   }
 }
@@ -41,8 +40,8 @@ class BindingParserStrategy implements ParserStrategy {
 class CoreParserStrategy implements ParserStrategy {
   const CoreParserStrategy();
 
-  Future<Element> apply(
-      xml.XmlElement element, Element parent, ParserSession session) {
+  Future<Element> apply(xml.XmlElement element, Element parent,
+      ParserSession session, OpenCloseNodes openCloseNodes) {
     final entry = Element(
         element.name.local,
         attributeValue(element, 'id'),
@@ -52,22 +51,47 @@ class CoreParserStrategy implements ParserStrategy {
         element.name.prefix == 'mounted',
         session.getNextId());
 
+    openCloseNodes.incrementOpen();
+
     parent.children.add(entry);
 
     session.registerParsed(entry);
 
-    return asyncEvery(notOmitted(element.children),
-            (xml.XmlElement element) => session.next(element, parent: entry))
-        .then((_) => entry);
+    return asyncEvery(
+        notOmitted(element.children),
+        (xml.XmlElement element) => session.next(element,
+            parent: entry, openCloseNodes: openCloseNodes)).then((_) => entry);
   }
 }
 
 class DefaultParserStrategy implements ParserStrategy {
   const DefaultParserStrategy();
 
-  Future<Element> apply(
-          xml.XmlElement element, Element parent, ParserSession session) =>
-      asyncEvery(notOmitted(element.children),
-              (xml.XmlElement element) => session.next(element, parent: parent))
-          .then((_) => parent);
+  Future<Element> apply(xml.XmlElement element, Element parent,
+      ParserSession session, OpenCloseNodes openCloseNodes) {
+    openCloseNodes.incrementOpen();
+
+    return asyncEvery(
+        notOmitted(element.children),
+        (xml.XmlElement element) => session.next(element,
+            parent: parent,
+            openCloseNodes: openCloseNodes)).then((_) => parent);
+  }
+}
+
+class OpenCloseNodes {
+  final Completer<bool> completer = Completer<bool>();
+  int _openNodes = 0, _closedNodes = 0;
+
+  OpenCloseNodes();
+
+  void incrementOpen() => _openNodes++;
+
+  void incrementClosed() => _closedNodes++;
+
+  void tryResolve() {
+    if (_openNodes > 0 && _closedNodes > 0 && _openNodes == _closedNodes) {
+      completer.complete(true);
+    }
+  }
 }
