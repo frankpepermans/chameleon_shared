@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
+import 'package:chameleon_shared/src/engine/utils/utils.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:xml/xml.dart' as xml;
 
 import 'package:chameleon_shared/src/engine/blocs/model/model_state.dart';
 import 'package:chameleon_shared/src/engine/blocs/mutation/update_params.dart';
-import 'package:chameleon_shared/src/engine/utils/utils.dart';
 import 'package:chameleon_shared/src/engine/blocs/xml/bloc.dart';
 
 
@@ -59,7 +59,7 @@ class MutationBloc extends Bloc<Element, XmlEvent> {
       final child = current.children[i];
 
       if (child.uid == uid) {
-        final localIndices = indexMap(xmlElement: child.element);
+        final localIndices = indexMapXml(child.element);
         final mismatch = localIndices.keys.firstWhere(
             (key) => indices[key] != localIndices[key],
             orElse: () => null);

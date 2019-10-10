@@ -12,7 +12,6 @@ import 'package:chameleon_shared/src/engine/utils/utils.dart';
 class WebGlue {
   static final plugins = context['plugins'] as JsObject;
 
-  final JsFunction containerCtr = plugins['Container'] as JsFunction;
   final List<String> availablePlugins;
   final Map<int, html.Element> _parserCache = <int, html.Element>{};
   final Map<int, Object> _stateCache = <int, Object>{};
