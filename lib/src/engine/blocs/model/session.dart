@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:chameleon_shared/src/engine/blocs/model/strategy.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:xml/xml.dart' as xml;
 
@@ -10,8 +9,6 @@ import 'package:chameleon_shared/src/engine/utils/utils.dart';
 
 class ParserSession {
   final Future<Element> Function(xml.XmlElement element, {Element parent}) next;
-
-  int _nextId = 0;
 
   final BehaviorSubject<List<Element>> _onParsed =
       BehaviorSubject<List<Element>>.seeded(const <Element>[]);
@@ -22,8 +19,6 @@ class ParserSession {
   Sink<List<Element>> get onParsed => _onParsed.sink;
 
   List<Element> get currentlyParsed => _onParsed.value;
-
-  int getNextId() => ++_nextId;
 
   ParserSession(this.next);
 

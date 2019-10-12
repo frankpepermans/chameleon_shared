@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
-import 'package:chameleon_shared/src/engine/utils/utils.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:xml/xml.dart' as xml;
 
@@ -48,29 +47,6 @@ class MutationBloc extends Bloc<Element, XmlEvent> {
     } on xml.XmlException catch (e) {
       return ErrorEvent(e);
     }
-  }
-
-  ModelEntry _findElementByUid(
-      Element current, int uid, Map<String, int> indices) {
-    for (var i = 0, len = current.children.length; i < len; i++) {
-      final child = current.children[i];
-
-      if (child.uid == uid) {
-        final localIndices = indexMapXml(child.element);
-        final mismatch = localIndices.keys.firstWhere(
-            (key) => indices[key] != localIndices[key],
-            orElse: () => null);
-
-        if (mismatch == null) return child;
-      }
-
-      final recursive = _findElementByUid(child, uid, indices);
-
-      if (recursive != null) return recursive;
-    }
-
-    return current.bindings
-        .firstWhere((binding) => binding.uid == uid, orElse: () => null);
   }
 
   void _replaceNodes(xml.XmlElement original, bool isBinding,

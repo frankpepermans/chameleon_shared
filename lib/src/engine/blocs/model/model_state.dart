@@ -7,7 +7,6 @@ import 'package:chameleon_shared/src/engine/utils/utils.dart';
 abstract class ModelEntry {
   String get id;
   String get type;
-  int get uid;
   bool get isMounted;
   XmlElement get element;
 
@@ -20,10 +19,9 @@ class Element implements ModelEntry {
   final XmlElement element;
   final List<Element> children;
   final List<Binding> bindings;
-  final int uid;
 
   const Element(this.type, this.id, this.element, this.children, this.bindings,
-      this.isMounted, this.uid);
+      this.isMounted);
 
   Map<String, dynamic> toMap() {
     /*if (id == null || id.isEmpty) {
@@ -50,11 +48,10 @@ class Element implements ModelEntry {
 
 class Binding implements ModelEntry {
   final String type, id;
-  final int uid;
   final bool isMounted;
   final XmlElement element;
 
-  const Binding(this.type, this.id, this.element, this.isMounted, this.uid);
+  const Binding(this.type, this.id, this.element, this.isMounted);
 
   Map<String, dynamic> toMap() => null;
 }

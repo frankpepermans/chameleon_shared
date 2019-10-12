@@ -24,8 +24,8 @@ class BindingParserStrategy implements ParserStrategy {
         .then((parent) {
       if (parent == null) return null;
 
-      parent.bindings.add(Binding(element.name.local, id, element,
-          element.name.prefix == 'bound', session.getNextId()));
+      parent.bindings.add(Binding(
+          element.name.local, id, element, element.name.prefix == 'bound'));
 
       return asyncEvery(notOmitted(element.children),
               (xml.XmlElement element) => session.next(element, parent: parent))
@@ -49,8 +49,7 @@ class CoreParserStrategy implements ParserStrategy {
         element,
         <Element>[],
         <Binding>[],
-        element.name.prefix == 'mounted',
-        session.getNextId());
+        element.name.prefix == 'mounted');
 
     parent.children.add(entry);
 

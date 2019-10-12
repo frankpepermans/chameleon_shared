@@ -21,7 +21,7 @@ class ModelBloc extends Bloc<XmlState, ModelState> {
 
   @override
   ModelState get initialState => const ModelState(
-      Element('', '', null, <Element>[], <Binding>[], false, -1), <String>[]);
+      Element('', '', null, <Element>[], <Binding>[], false), <String>[]);
 
   @override
   Stream<ModelState> mapEventToState(XmlState event) async* {
@@ -40,8 +40,7 @@ class ModelBloc extends Bloc<XmlState, ModelState> {
 
   Future<Element> _toModel(DocumentState state) => _parse(
       state.document.rootElement,
-      parent:
-          Element('root', 'root', null, <Element>[], <Binding>[], false, -1));
+      parent: Element('root', 'root', null, <Element>[], <Binding>[], false));
 
   Future<Element> _parse(xml.XmlElement element, {Element parent}) =>
       _resolveStrategy(element.name.prefix).apply(element, parent, _session);
