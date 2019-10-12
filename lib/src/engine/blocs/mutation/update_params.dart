@@ -1,7 +1,9 @@
+import 'package:chameleon_shared/src/engine/blocs/model/model_state.dart';
+
 class UpdateParameters {
-  final int uid;
+  final ModelEntry entry;
   final String replacement, state;
   final Map<String, int> indices;
 
-  UpdateParameters(this.uid, this.replacement, this.state, this.indices);
+  UpdateParameters(this.entry, this.replacement, this.state, this.indices);
 }

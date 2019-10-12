@@ -10,7 +10,6 @@ import 'package:chameleon_shared/src/engine/blocs/model/model_state.dart';
 import 'package:chameleon_shared/src/engine/blocs/mutation/update_params.dart';
 import 'package:chameleon_shared/src/engine/blocs/xml/bloc.dart';
 
-
 class MutationBloc extends Bloc<Element, XmlEvent> {
   final String raw;
   final Stream<UpdateParameters> update;
@@ -23,10 +22,8 @@ class MutationBloc extends Bloc<Element, XmlEvent> {
   @override
   Stream<XmlEvent> mapEventToState(Element event) async* {
     yield* update
-        .map((params) => _update(
-            _findElementByUid(event, params.uid, params.indices),
-            params.replacement,
-            params.state))
+        .map(
+            (params) => _update(params.entry, params.replacement, params.state))
         .where((doc) => doc != null);
   }
 

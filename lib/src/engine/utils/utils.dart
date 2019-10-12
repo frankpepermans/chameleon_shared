@@ -24,6 +24,16 @@ String attributeValue(xml.XmlElement element, String name) {
   return attr?.value;
 }
 
+Map<String, String> attributesToMap(xml.XmlElement element) {
+  final map = <String, String>{};
+
+  if (element?.name?.local?.toLowerCase() != 'include') {
+    element?.attributes?.forEach((attr) => map[attr.name.local] = attr.value);
+  }
+
+  return map;
+}
+
 bool samePath(xml.XmlElement origin, String right, Map rMap) {
   final left = attributeValue(origin, 'data-index');
   final hash = '${left.hashCode}_${right.hashCode}';
@@ -47,6 +57,26 @@ bool samePath(xml.XmlElement origin, String right, Map rMap) {
 
     return true;
   });
+}
+
+Map<String, int> getCombinedIndex(xml.XmlElement element) {
+  final indices = <String, int>{};
+  xml.XmlNode current = element;
+
+  while (current != null && current is! xml.XmlDocument) {
+    if (current is xml.XmlElement) {
+      final json = attributeValue(current, 'data-index');
+
+      if (json != null) {
+        indices
+            .addAll(Map<String, int>.from(const JsonDecoder().convert(json)));
+      }
+    }
+
+    current = current.parent;
+  }
+
+  return indices;
 }
 
 Future<dynamic> asyncEvery<T>(
