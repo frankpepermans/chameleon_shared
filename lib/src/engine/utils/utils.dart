@@ -81,7 +81,7 @@ Map<String, int> getCombinedIndex(xml.XmlElement element) {
 
 Future<dynamic> asyncEvery<T>(
         Iterable<T> list, Future<dynamic> fn(T current)) =>
-    Stream.fromIterable(list).asyncMap(fn).drain();
+    Future.wait(list.map(fn));
 
 List<xml.XmlElement> notOmitted(Iterable<xml.XmlNode> list) => list
     .whereType<xml.XmlElement>()

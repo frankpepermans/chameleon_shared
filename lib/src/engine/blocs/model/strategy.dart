@@ -31,7 +31,8 @@ class BindingParserStrategy implements ParserStrategy {
               (xml.XmlElement element) => session.next(element, parent: parent))
           .then((_) => parent);
     }, onError: (e, s) {
-      print(e);
+      print(
+          'Unable to match binding: "${element.name.local}" with core id: $id');
 
       return parent;
     });
@@ -43,13 +44,8 @@ class CoreParserStrategy implements ParserStrategy {
 
   Future<Element> apply(
       xml.XmlElement element, Element parent, ParserSession session) {
-    final entry = Element(
-        element.name.local,
-        attributeValue(element, 'id'),
-        element,
-        <Element>[],
-        <Binding>[],
-        element.name.prefix == 'mounted');
+    final entry = Element(element.name.local, attributeValue(element, 'id'),
+        element, <Element>[], <Binding>[], element.name.prefix == 'mounted');
 
     parent.children.add(entry);
 
