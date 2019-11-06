@@ -24,12 +24,20 @@ class BindingParserStrategy implements ParserStrategy {
         .then((parent) {
       if (parent == null) return null;
 
-      parent.bindings.add(Binding(
-          element.name.local, id, element, element.name.prefix == 'bound'));
+      final isBound =
+          element.name.prefix == 'bound' || element.name.prefix == 'mounted';
 
-      return asyncEvery(notOmitted(element.children),
-              (xml.XmlElement element) => session.next(element, parent: parent))
-          .then((_) => parent);
+      parent.bindings.add(Binding(element.name.local, id, element, isBound));
+
+      if (isBound) {
+        final handler =
+            (xml.XmlElement element) => session.next(element, parent: parent);
+
+        return asyncEvery(notOmitted(element.children), handler)
+            .then((_) => parent);
+      }
+
+      return parent;
     }, onError: (e, s) {
       print(
           'Unable to match binding: "${element.name.local}" with core id: $id');
@@ -44,16 +52,37 @@ class CoreParserStrategy implements ParserStrategy {
 
   Future<Element> apply(
       xml.XmlElement element, Element parent, ParserSession session) {
-    final entry = Element(element.name.local, attributeValue(element, 'id'),
-        element, <Element>[], <Binding>[], element.name.prefix == 'mounted');
+    final isMounted = element.name.prefix == 'mounted';
+    final id = attributeValue(element, 'id');
+    final entry = Element(
+        element.name.local,
+        id,
+        element,
+        <Element>[],
+        <Binding>[],
+        isMounted,
+        id != null ? getCombinedIndex(element) : const {});
+
+    if (entry.id != null && session.isRegistered(entry)) {
+      /// Treat a core node as a binding node if the same id/path is encountered
+      /// This can occur for example when loading external templates,
+      /// where we cannot control the ID's used
+      return const BindingParserStrategy().apply(element, parent, session);
+    }
 
     parent.children.add(entry);
 
     session.registerParsed(entry);
 
-    return asyncEvery(notOmitted(element.children),
-            (xml.XmlElement element) => session.next(element, parent: entry))
-        .then((_) => entry);
+    if (isMounted) {
+      final handler =
+          (xml.XmlElement element) => session.next(element, parent: entry);
+
+      return asyncEvery(notOmitted(element.children), handler)
+          .then((_) => entry);
+    }
+
+    return Future.value(entry);
   }
 }
 

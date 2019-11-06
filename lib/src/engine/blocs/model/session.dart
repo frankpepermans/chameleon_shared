@@ -34,6 +34,14 @@ class ParserSession {
     return completer.completer.future;
   }
 
+  bool isRegistered(Element element) =>
+      _onParsed.value.firstWhere(
+          (elm) =>
+              elm.id == element.id &&
+              elm.path.toString() == element.path.toString(),
+          orElse: () => null) !=
+      null;
+
   void registerParsed(Element element) {
     _completers.removeWhere((completer) => completer.test(element));
 

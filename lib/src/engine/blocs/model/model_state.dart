@@ -15,13 +15,14 @@ abstract class ModelEntry {
 
 class Element implements ModelEntry {
   final String type, id;
+  final Map<String, int> path;
   final bool isMounted;
   final XmlElement element;
   final List<Element> children;
   final List<Binding> bindings;
 
   const Element(this.type, this.id, this.element, this.children, this.bindings,
-      this.isMounted);
+      this.isMounted, this.path);
 
   Map<String, dynamic> toMap() {
     /*if (id == null || id.isEmpty) {
